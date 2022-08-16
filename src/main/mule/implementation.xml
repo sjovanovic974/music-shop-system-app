@@ -1,5 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd"></mule>
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<sub-flow name="pagination" doc:id="83b5dde9-0b2c-4709-a6b6-c15e07b56268" >
+		<set-variable value='#[attributes.queryParams.page default 1 as Number]' doc:name="Page" doc:id="56d836b8-7ccb-4a22-9831-f6cc2ec26ba2" variableName="page" />
+		<set-variable value="#[attributes.queryParams.size default 10 as Number]" doc:name="Size" doc:id="42fd92af-c886-490e-ac43-44c95a45056f" variableName="size" />
+		<set-variable value="#[(vars.page - 1) * vars.size]" doc:name="Offset" doc:id="8bd04a99-ca27-4991-a160-7441eb25e554" variableName="offset" />
+	</sub-flow>
+	<flow name="get-artists" doc:id="fda38ede-4023-4667-8a04-d968e99ed39a" >
+		<flow-ref doc:name="Flow Reference" doc:id="be2cb338-96e5-4fa9-beb6-dab4609bb2f2" name="pagination" />
+		<db:select doc:name="Select all artists" doc:id="cb8edf16-7e93-4529-b86f-f098ba0e9b90" config-ref="Database_Config">
+			<db:sql ><![CDATA[#["SELECT * FROM artists ORDER BY id LIMIT $(vars.size) OFFSET $(vars.offset)"]]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="43c6b79d-a6b2-485c-802c-195e944e6682" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map {
+	id: $.id,
+	name: $.name
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="get-artist-by-id" doc:id="ab1b6b07-9b00-4cb7-a670-9bf4965b4c61" >
+		<db:select doc:name="Select artist by id" doc:id="626c0ed8-085d-4a54-8314-be69f82a8334" config-ref="Database_Config">
+			<db:sql ><![CDATA[SELECT * FROM artists WHERE id = :id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{'id': attributes.uriParams.'id'}]]]></db:input-parameters>
+		</db:select>
+		<validation:is-not-empty-collection doc:name="Is not empty collection" doc:id="c2ff6f6a-354c-47ca-b581-db7782f24e49" />
+		<ee:transform doc:name="Transform Message" doc:id="7fb35f42-8e8a-4107-89c1-5be9a69c5ba5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map {
+	id: $.id,
+	name: $.name
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="d5e6e488-cd7f-46b7-b865-5f28096606db" type="VALIDATION:EMPTY_COLLECTION">
+				<ee:transform doc:name="Transform Message" doc:id="abadca5d-efa1-4b15-9aaa-af0bd2066f07" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Artist not found"
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="httpStatus" ><![CDATA[404]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>

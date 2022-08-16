@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_fda38ede_4023_4667_8a04_d968e99ed39a_Input_Payload = Array<{  name: String,   id?: Number,   _?: Any} {"description": "Product artist"}>
+

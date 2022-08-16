@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
     
     <apikit:config name="music-store-system-api-config" api="resource::764d39f8-f6c7-49cf-a410-28e6956c4b58:music-store-system-api:1.0.1:raml:zip:music-store-system-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <flow name="music-store-system-api-main">
@@ -204,31 +204,7 @@ output application/json
         </ee:transform>
     </flow>
     <flow name="get:\artists:music-store-system-api-config">
-        <ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-[
-  {
-    id: 1,
-    name: "Metallica"
-  }, 
-  {
-    id: 2,
-    name: "Iron Maiden"
-  }, 
-  {
-    id: 3,
-    name: "Pantera"
-  }, 
-  {
-    id: 4,
-    name: "Megadeth"
-  }
-]]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<flow-ref doc:name="get-artists" doc:id="c281986f-956e-436b-be71-ffd4a6768c30" name="get-artists"/>
     </flow>
     <flow name="get:\categories:music-store-system-api-config">
         <ee:transform>
@@ -580,22 +556,7 @@ output application/json
         </ee:transform>
     </flow>
     <flow name="get:\artists\(id):music-store-system-api-config">
-        <ee:transform>
-            <ee:variables>
-                <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-        <ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  id: 1,
-  name: "Metallica"
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<flow-ref doc:name="get-artist-by-id" doc:id="a8702773-aa95-4928-ad09-4de5087bf920" name="get-artist-by-id"/>
     </flow>
     <flow name="post:\artists:application\json:music-store-system-api-config">
         <ee:transform>
