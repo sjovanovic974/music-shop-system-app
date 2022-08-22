@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="category-implementation-test-suite.xml" />
+	<munit:test name="get-categories-test" doc:id="3e6fc6bd-3d28-4c23-9a14-2a18e2c9c6cc" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when select categories" doc:id="7bf2d77a-f356-4baa-9ab9-78f7ba76991c" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="05040355-41c7-4539-bad0-51227d58fffe" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[&#10;	%dw 2.0&#10;	output application/json&#10;	---&#10;[{"id":1, &#10;   "name":"CD"&#10;   },&#10;   {"id":2, &#10;   "name":"LP"&#10;   }&#10;]]' mediaType="application/json" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event - GET categories" doc:id="692906d9-f05c-4d20-9c5b-baf8baacb22d" />
+			<flow-ref doc:name="Flow-ref to get-categories" doc:id="f26a2ed6-79dd-4984-9a01-600d47689214" name="get-categories"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Verify call" doc:id="2ad38233-3364-4d4d-ab84-7187d8d19e74" processor="db:select" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="05040355-41c7-4539-bad0-51227d58fffe" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+
+			</munit-tools:verify-call>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="46099f76-874b-48fa-a5c5-46b0616cb385" is="#[MunitTools::notNullValue()]" message="Empty collection" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="get-category-by-id-test" doc:id="941c8905-6b8b-460a-8ce7-698f5c1cfb72" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when select by id" doc:id="c3f12523-632e-471e-8b95-74cf679cbd40" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="bfb07220-94d6-4e42-8348-7aa309cfabda" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[&#10;	%dw 2.0&#10;	output application/json&#10;		---&#10;[{&#10;   "id":1,&#10;    "name":"CD"&#10;  }]  &#10;]' mediaType="application/json" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event GET by id#" doc:id="732cbc9e-83bd-424b-82f9-ebdb106285f1" >
+				<munit:attributes value="# [{uriParams: {id: '1'}}]" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to get-category-by-id" doc:id="af4a27ba-6c01-4bdc-a35d-ad6e9187754e" name="get-category-by-id"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Verify call select by id" doc:id="7bd5d8f8-0040-4a8d-9d9a-a04782d90e95" processor="db:select" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="bfb07220-94d6-4e42-8348-7aa309cfabda" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+
+			</munit-tools:verify-call>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="fcdec51d-a3f0-4a65-af5f-8583fa0d43e2" expression="#[payload.name]" is='#[MunitTools::containsString("CD")]' message="Failed id"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="get-category-by-id-test-error" doc:id="6bbec678-df66-4d6a-bd9e-017692a7fd4e" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when exception thrown" doc:id="2e89fe12-3ae3-4d88-9b49-525dc45c754c" processor="validation:is-not-empty-collection">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="4bb37dd1-eb88-4984-b9d9-08c338f4dbd9" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="VALIDATION:EMPTY_COLLECTION" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="71a81fe7-5a93-4496-9668-37c202bf814e" />
+			<try doc:name="Try" doc:id="09232cf8-bbbb-4f36-b832-ba4014687bb0" >
+				<flow-ref doc:name="Flow-ref to get-category-by-id" doc:id="f3509bb2-07a3-491b-804d-ffd8fc042120" name="get-category-by-id" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="f217dc76-fd4d-42ba-ba9c-e27ce2ec1d83" type="VALIDATION:EMPTY_COLLECTION">
+						<logger level="INFO" doc:name="Logger" doc:id="b48a5544-ab90-49a6-aa8f-415d2bc82ba5" />
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="a15a9903-9313-4cae-9e7a-671a7a40b4c8" expression="#[payload.message]" is='#[MunitTools::containsString("Category not found!")]'/>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

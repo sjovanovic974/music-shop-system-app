@@ -70,22 +70,7 @@ output application/json
         </ee:transform>
     </flow>
     <flow name="put:\categories\(id):application\json:music-store-system-api-config">
-        <ee:transform>
-            <ee:variables>
-                <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-        <ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  id: 1,
-  name: "CD"
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<flow-ref doc:name="put-category" doc:id="94244f0b-3a27-4a98-9690-d79375859ed4" name="put-category"/>
     </flow>
     <flow name="delete:\products\(id):music-store-system-api-config">
         <ee:transform>
@@ -106,19 +91,7 @@ output application/json
 		<flow-ref doc:name="delete-artist" doc:id="f783cf3c-38fb-4014-8cc1-19ec121ef3ab" name="delete-artist"/>
     </flow>
     <flow name="delete:\categories\(id):music-store-system-api-config">
-        <ee:transform>
-            <ee:variables>
-                <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-        <ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-"Category deleted"]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<flow-ref doc:name="delete-category" doc:id="e51a71de-40ee-410e-864a-4371ec8f2e5d" name="delete-category"/>
     </flow>
     <flow name="get:\products\artist\(name):music-store-system-api-config">
         <ee:transform>
@@ -180,31 +153,7 @@ output application/json
 		<flow-ref doc:name="get-artists" doc:id="c281986f-956e-436b-be71-ffd4a6768c30" name="get-artists"/>
     </flow>
     <flow name="get:\categories:music-store-system-api-config">
-        <ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-[
-  {
-    id: 1,
-    name: "CD"
-  }, 
-  {
-    id: 2,
-    name: "LP"
-  }, 
-  {
-    id: 3,
-    name: "DVD"
-  }, 
-  {
-    id: 4,
-    name: "BOOK"
-  }
-]]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<flow-ref doc:name="get-categories" doc:id="6d43cbaf-409c-4301-951d-b99c098367e4" name="get-categories"/>
     </flow>
     <flow name="get:\products\category\(id):music-store-system-api-config">
         <ee:transform>
@@ -511,22 +460,7 @@ output application/json
         </ee:transform>
     </flow>
     <flow name="get:\categories\(id):music-store-system-api-config">
-        <ee:transform>
-            <ee:variables>
-                <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-        <ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  id: 1,
-  name: "CD"
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<flow-ref doc:name="get-category-by-id" doc:id="bf21d94e-3170-4992-95aa-2564799f41a9" name="get-category-by-id"/>
     </flow>
     <flow name="get:\artists\(id):music-store-system-api-config">
 		<flow-ref doc:name="get-artist-by-id" doc:id="a8702773-aa95-4928-ad09-4de5087bf920" name="get-artist-by-id"/>
@@ -535,17 +469,7 @@ output application/json
 		<flow-ref doc:name="post-artist" doc:id="dddbaa6e-902a-4e19-91e7-3734139c1bc1" name="post-artist"/>
     </flow>
     <flow name="post:\categories:application\json:music-store-system-api-config">
-        <ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  id: 1,
-  name: "CD"
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<flow-ref doc:name="post-category" doc:id="c327480f-91f0-4d60-a533-4b0f2537c102" name="post-category"/>
     </flow>
     <flow name="post:\products:application\json:music-store-system-api-config">
         <ee:transform>

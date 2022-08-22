@@ -1,0 +1,7 @@
+%dw 2.0
+
+type auto_c239434f_7145_4d7c_88ac_4ade3686a625_Input_Payload = {
+  name: "CD" | "DVD" | "LP" | "BOOK", 
+  _?: Any
+} {"description": "DTO to be used with POST and PUT methods"}
+

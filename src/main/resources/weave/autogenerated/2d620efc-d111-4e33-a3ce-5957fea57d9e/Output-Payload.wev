@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_2d620efc_d111_4e33_a3ce_5957fea57d9e_Output_Payload = Array<{  name: "CD" | "DVD" | "LP" | "BOOK",   id?: Number,   _?: Any} {"description": "Product category"}>
+
