@@ -33,22 +33,7 @@
         </error-handler>
     </flow>
     <flow name="put:\artists\(id):application\json:music-store-system-api-config">
-        <ee:transform>
-            <ee:variables>
-                <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-        <ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  id: 1,
-  name: "Metallica"
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<flow-ref doc:name="put-artist" doc:id="d26a42e6-7e7c-4091-8671-4d7391c07684" name="put-artist"/>
     </flow>
     <flow name="put:\products\(id):application\json:music-store-system-api-config">
         <ee:transform>
@@ -118,19 +103,7 @@ output application/json
         </ee:transform>
     </flow>
     <flow name="delete:\artists\(id):music-store-system-api-config">
-        <ee:transform>
-            <ee:variables>
-                <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-        <ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-"Artist deleted"]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<flow-ref doc:name="delete-artist" doc:id="f783cf3c-38fb-4014-8cc1-19ec121ef3ab" name="delete-artist"/>
     </flow>
     <flow name="delete:\categories\(id):music-store-system-api-config">
         <ee:transform>
@@ -559,17 +532,7 @@ output application/json
 		<flow-ref doc:name="get-artist-by-id" doc:id="a8702773-aa95-4928-ad09-4de5087bf920" name="get-artist-by-id"/>
     </flow>
     <flow name="post:\artists:application\json:music-store-system-api-config">
-        <ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  id: 1,
-  name: "Metallica"
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<flow-ref doc:name="post-artist" doc:id="dddbaa6e-902a-4e19-91e7-3734139c1bc1" name="post-artist"/>
     </flow>
     <flow name="post:\categories:application\json:music-store-system-api-config">
         <ee:transform>

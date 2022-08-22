@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+		<sub-flow name="pagination" doc:id="8f788487-816a-44a7-ae19-160a2a2e6e37" >
+		<set-variable value='#[attributes.queryParams.page default 1 as Number]' doc:name="Page" doc:id="bd716167-6291-4e47-9899-8bdb15e8f1b2" variableName="page" />
+		<set-variable value="#[attributes.queryParams.size default 10 as Number]" doc:name="Size" doc:id="b05cd807-e61a-4bc1-8764-52915775fa06" variableName="size" />
+		<set-variable value="#[(vars.page - 1) * vars.size]" doc:name="Offset" doc:id="1ecf9da6-7750-471e-8bf7-436da5aa5987" variableName="offset" />
+	</sub-flow>
+	
+	</mule>

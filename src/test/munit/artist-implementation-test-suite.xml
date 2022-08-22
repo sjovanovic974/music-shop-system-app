@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="artist-implementation-test-suite.xml" />
+	<munit:test name="get-artists-test" doc:id="1ec63836-a3af-4a1e-8f38-3a53ca386677" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when select artists" doc:id="1497b950-1945-4713-8181-20966dbc2e02" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="cb8edf16-7e93-4529-b86f-f098ba0e9b90" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[&#10;	%dw 2.0&#10;	output application/json&#10;	---&#10;[{&quot;id&quot;:1,&quot;sku&quot;:&quot;CD-000001&quot;,&quot;name&quot;:&quot;Master of Puppets&quot;,&quot;description&quot;:&quot;Seminal album form early 80's&quot;,&quot;active&quot;:true,&quot;image_url&quot;:&quot;https://community.mp3tag.de/uploads/default/original/2X/a/acf3edeb055e7b77114f9e393d1edeeda37e50c9.png&quot;,&quot;unit_price&quot;:15.99,&quot;units_in_stock&quot;:12,&quot;date_created&quot;:&quot;2022-08-12T09:16:43.000Z&quot;,&quot;last_updated&quot;:&quot;2022-08-12T09:17:59.161Z&quot;,&quot;artist&quot;:{&quot;id&quot;:1,&quot;name&quot;:&quot;Metallica&quot;},&quot;category&quot;:{&quot;id&quot;:1,&quot;name&quot;:&quot;CD&quot;}},{&quot;id&quot;:2,&quot;sku&quot;:&quot;LP-000001&quot;,&quot;name&quot;:&quot;Live after Death&quot;,&quot;description&quot;:&quot;Famous live album form mid-80's&quot;,&quot;active&quot;:true,&quot;image_url&quot;:&quot;https://community.mp3tag.de/uploads/default/original/2X/a/acf3edeb055e7b77114f9e393d1edeeda37e50c9.png&quot;,&quot;unit_price&quot;:35.99,&quot;units_in_stock&quot;:3,&quot;date_created&quot;:&quot;2022-04-12T09:13:43.000Z&quot;,&quot;last_updated&quot;:&quot;2022-08-12T09:17:59.161Z&quot;,&quot;artist&quot;:{&quot;id&quot;:2,&quot;name&quot;:&quot;Iron Maiden&quot;},&quot;category&quot;:{&quot;id&quot;:2,&quot;name&quot;:&quot;LP&quot;}}]&#10;&#10;]" mediaType="application/json" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event - GET artists" doc:id="ccc96eff-f97d-4e98-9832-b649fe096436" />
+			<flow-ref doc:name="Flow-ref to get-artists" doc:id="2cd842e9-520a-4192-bf04-18717e3365d8" name="get-artists"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Verify call" doc:id="58f5b503-9c4d-425b-989b-8d84ff445e43" processor="db:select" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="cb8edf16-7e93-4529-b86f-f098ba0e9b90" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="645757c8-703e-45e2-9e0a-e77c9ae928be" is="#[MunitTools::notNullValue()]" message="Empty collection" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="get-artist-by-id-test" doc:id="90904117-1750-4276-90ff-98dc62958334" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when select by id" doc:id="3b0403e4-499a-4576-ab61-ee7410af1aa3" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="626c0ed8-085d-4a54-8314-be69f82a8334" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[&#10;	%dw 2.0&#10;	output application/json&#10;		---&#10;[{&#10;   "id":1,&#10;    "name":"Metallica"&#10;  }]&#10;  ]' mediaType="application/json" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event GET by id#" doc:id="9372ad85-e2b0-45d3-abdc-8de060ec5cef" >
+				<munit:attributes value="# [{uriParams: {id: '1'}}]" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to get-artist-by-id" doc:id="2469d99b-9b7f-46a6-9ac3-7ca522e94aff" name="get-artist-by-id"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Verify call select by id" doc:id="c9265628-413b-4ab2-a7aa-ac60ed6e975d" processor="db:select" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="626c0ed8-085d-4a54-8314-be69f82a8334" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="689feef3-3cd0-4821-b078-8b08a7003924" expression="#[payload.name]" is='#[MunitTools::containsString("Metallica")]' message="Failed id"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="get-artist-by-id-test-error" doc:id="99fd64a8-c489-484b-b45d-e03fe642c07f" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when exception thrown" doc:id="5a16d22c-b526-4f83-9f40-9b49d73feb87" processor="validation:is-not-empty-collection">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="c2ff6f6a-354c-47ca-b581-db7782f24e49" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="VALIDATION:EMPTY_COLLECTION" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="57277619-96bf-4045-b184-46b1abf7afb9" />
+			<try doc:name="Try" doc:id="99f6d5c5-e3b9-4fcb-a112-65c9dd8eb252" >
+				<flow-ref doc:name="Flow-ref to get-artist-by-id" doc:id="897d3929-8d57-494e-bb02-4c624d4e5a09" name="get-artist-by-id" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="036a113a-2ac3-49c8-8674-165496051c26" type="VALIDATION:EMPTY_COLLECTION">
+						<logger level="INFO" doc:name="Logger" doc:id="327e0ec8-fec6-47e3-905b-f1d46e7ef16f" />
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="e8584b05-c439-4707-9e48-0e32a4933965" expression="#[payload.message]" is='#[MunitTools::containsString("Artist not found!")]'/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="delete-artist-test" doc:id="50c87b58-30a6-4d69-9b5f-be5cf43c525f" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="6ed4efd3-c4bb-4d52-9fa0-544471b8861d" processor="db:delete">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="768fdab5-b3a3-4b42-8b13-cae8be48099d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="dce66094-a644-4b2b-bb22-84c33ea6a777" >
+				<munit:attributes value="# [{uriParams: {id: '1'}}]" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to delete-artist" doc:id="ebb8580c-7758-42de-8539-a21811ea0376" name="delete-artist"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="88ca226d-8ad3-4efa-860b-bd924d53a7ff" expression="#[payload.message]" is='#[MunitTools::containsString("Artist deleted")]'/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="post-artist-test" doc:id="ea4e4674-dd62-463a-935b-c27ad6946f90" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when inserting" doc:id="5da5f1b6-96f8-46ce-933d-0745d6d10007" processor="db:insert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="8575fce5-01d4-499f-a461-0abc7b605144" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when sending response" doc:id="54ab76d8-0300-4d11-b402-8d91a4dafd6b" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="6a00ec4a-cc13-469c-9b7f-4d5ed75e7071" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[%dw 2.0&#10;	output application/json&#10;---&#10;[{&#10;  "id": 21,&#10;  "name": "Testament"&#10;}&#10;]]' mediaType="application/json" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="22de615b-9f0e-4bec-a5c5-83add40e30f7" >
+				<munit:payload value='#[%dw 2.0&#10;	output application/json&#10;---&#10;{&#10;  "name": "Testament"&#10;}&#10;]' mediaType="application/json" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to post-artist" doc:id="8eb407c1-20b7-4707-b6bb-086748b214d9" name="post-artist"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="35207999-6920-4b93-b312-bd70fbbbfc5f" expression="#[payload.name]" is='#[MunitTools::containsString("Testament")]'/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="post-artist-test-error" doc:id="9f0c4bc6-b0d9-4a63-8537-187b03b29a24" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="4e027526-3e33-49c0-bf28-547bb510716a" processor="db:insert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="8575fce5-01d4-499f-a461-0abc7b605144" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="DB:QUERY_EXECUTION" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="5a52b219-e816-4492-8d78-ab2e28eb03c3" >
+				<munit:payload value='#[%dw 2.0&#10;	output application/json&#10;---&#10;{&#10;  "name": "Testament"&#10;}&#10;]' mediaType="application/json" />
+			</munit:set-event>
+			<try doc:name="Try" doc:id="420e5a0b-95ea-4a9a-91a5-36f18f0a109f" >
+				<flow-ref doc:name="Flow-ref to post-artist" doc:id="ef1eb7fc-669a-42d1-8de4-892e99e8be97" name="post-artist" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="6af494de-ed3f-45f0-8137-529c784843ba" type="DB:QUERY_EXECUTION">
+						<logger level="INFO" doc:name="Logger" doc:id="a25413b3-5550-498d-964b-253054ee93ff" />
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="4f216149-c00c-46b0-92c4-73a5b256f833" expression="#[payload.message]" is='#[MunitTools::notNullValue()]' />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="put-artist-test" doc:id="5c2029d8-ec32-42f1-a444-a9c3050a46e4" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when updating" doc:id="f3d07721-26f3-419e-b17a-50c581cb03d4" processor="db:update">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="5ae64f8c-d5fd-4f81-8cff-6d82424fd851" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when selecting" doc:id="e92dfa2f-d133-401a-9492-39cdee91b423" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="3cd91483-fb61-4290-b63a-d0628330ff91" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[%dw 2.0&#10;	output application/json&#10;---&#10;[{&#10;  "id": 21,&#10;  "name": "Testament"&#10;}&#10;]]' mediaType="application/json" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="b967467e-d941-4dd9-b26e-303adff420f4">
+				<munit:payload value='#[%dw 2.0&#10;	output application/json&#10;---&#10;{&#10;	"id": 21,&#10;    "name": "Testament"&#10;}&#10;]' mediaType="application/json" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to put-artist" doc:id="ac31c32f-2c31-48f2-a794-2ca8f7a1f7f7" name="put-artist"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Verify call" doc:id="550856c5-17e6-4425-85ad-9dc0649d52ee" processor="db:update" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="5ae64f8c-d5fd-4f81-8cff-6d82424fd851" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="19f6a7a8-bdc9-4d69-a9da-48b6fc1fe902" expression="#[payload.name]" is='#[MunitTools::containsString("Testament")]' />
+		</munit:validation>
+	</munit:test>
+
+
+</mule>
