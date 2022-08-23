@@ -10,17 +10,27 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 	<flow name="get-artists" doc:id="fda38ede-4023-4667-8a04-d968e99ed39a" >
 		<flow-ref doc:name="Flow Reference" doc:id="be2cb338-96e5-4fa9-beb6-dab4609bb2f2" name="pagination" />
 		<db:select doc:name="Select all artists" doc:id="cb8edf16-7e93-4529-b86f-f098ba0e9b90" config-ref="Database_Config">
-			<db:sql ><![CDATA[#["SELECT * FROM artists ORDER BY id LIMIT $(vars.size) OFFSET $(vars.offset)"]]]></db:sql>
+			<db:sql ><![CDATA[#["SELECT * FROM artists LIMIT $(vars.size) OFFSET $(vars.offset)"]]]></db:sql>
 		</db:select>
 		<ee:transform doc:name="Transform Message" doc:id="43c6b79d-a6b2-485c-802c-195e944e6682" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
----
-payload map {
+
+var ascending = (payload map {
 	id: $.id,
 	name: $.name
-}]]></ee:set-payload>
+} orderBy $[(vars.sort)])
+
+var descending = (payload map {
+	id: $.id,
+	name: $.name
+} orderBy $[(vars.sort)]) [-1 to 0]
+
+var finalOutput = if(lower(vars.order) == 'desc') descending else ascending
+
+---
+finalOutput]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</flow>

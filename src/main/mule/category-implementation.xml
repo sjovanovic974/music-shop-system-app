@@ -10,17 +10,27 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 	<flow name="get-categories" doc:id="2d620efc-d111-4e33-a3ce-5957fea57d9e" >
 		<flow-ref doc:name="Flow Reference" doc:id="a864fc3f-2c3d-4ff4-95da-9304c75f9121" name="pagination" />
 		<db:select doc:name="Select all categories" doc:id="05040355-41c7-4539-bad0-51227d58fffe" config-ref="Database_Config" >
-			<db:sql ><![CDATA[#["SELECT * FROM product_categories ORDER BY id LIMIT $(vars.size) OFFSET $(vars.offset)"]]]></db:sql>
+			<db:sql ><![CDATA[#["SELECT * FROM product_categories LIMIT $(vars.size) OFFSET $(vars.offset)"]]]></db:sql>
 		</db:select>
 		<ee:transform doc:name="Transform Message" doc:id="29de5b44-8168-4056-b882-27b3897a1db6" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
----
-payload map {
+
+var ascending = (payload map {
 	id: $.id,
 	name: $.name
-}]]></ee:set-payload>
+} orderBy $[(vars.sort)])
+
+var descending = (payload map {
+	id: $.id,
+	name: $.name
+} orderBy $[(vars.sort)]) [-1 to 0]
+
+var finalOutput = if(lower(vars.order) == 'desc') descending else ascending
+
+---
+finalOutput]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</flow>
