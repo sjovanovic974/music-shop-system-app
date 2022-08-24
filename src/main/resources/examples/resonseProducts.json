@@ -1,0 +1,20 @@
+{
+  "id": 1,
+  "sku": "CD-000001",
+  "name": "Master of Puppets",
+  "description": "Seminal album form early 80's",
+  "active": true,
+  "image_url": "https://community.mp3tag.de/uploads/default/original/2X/a/acf3edeb055e7b77114f9e393d1edeeda37e50c9.png",
+  "unit_price": 15.99,
+  "units_in_stock": 12,
+  "date_created": "2022-08-12T09:16:43.000Z",
+  "last_updated": "2022-08-12T09:17:59.161Z",
+  "artist": {
+    "id": 1,
+    "name": "Metallica"
+    },
+  "category": {
+    "id": 1,
+    "name": "CD"
+    }
+}

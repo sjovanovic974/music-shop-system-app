@@ -1,0 +1,31 @@
+%dw 2.0
+
+type auto_e38ab034_41dc_4664_a6ac_664d4e757454_Output_Attributes = {|
+  clientCertificate?: {|
+    publicKey?: {|  |}, 
+    "type"?: String, 
+    encoded?: Binary
+  |}, 
+  headers: {|
+    client_id: String, 
+    client_secret: String
+  |}, 
+  listenerPath: String, 
+  method: String, 
+  queryParams: {|
+    page?: Number, 
+    size?: Number, 
+    sort?: "name" | "id" | "sku" | "unit_price", 
+    order?: "asc" | "desc"
+  |}, 
+  queryString: String, 
+  relativePath: String, 
+  remoteAddress: String, 
+  requestPath: String, 
+  requestUri: String, 
+  scheme: String, 
+  uriParams: {|  |}, 
+  version: String, 
+  localAddress: String
+|}
+

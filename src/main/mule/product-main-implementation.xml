@@ -1,5 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd"></mule>
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="get-products" doc:id="e38ab034-41dc-4664-a6ac-664d4e757454" >
+		<flow-ref doc:name="Flow Reference" doc:id="8d084b7b-ecdf-44b9-b530-871ef4a7c4b6" name="pagination" />
+		<db:select doc:name="Select" doc:id="fdc76583-c272-440c-bac7-5c04d77d88df" config-ref="Database_Config">
+			<db:sql ><![CDATA[#["SELECT products.*, product_categories.id AS category_table_id, product_categories.name AS category_name,
+artists.id AS artist_table_id, artists.name AS artist_name FROM products
+JOIN product_categories ON products.category_id = product_categories.id
+JOIN artists ON products.artist_id = artists.id
+ORDER BY $(vars.sort)
+LIMIT $(vars.size) OFFSET $(vars.offset)"]]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="a213c8d6-57f0-4682-8b36-eeea09fe4986" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map (item, index) -> {
+	id: item.id,
+	sku: item.sku,
+	name: item.name,
+	description: item.description,
+	active: item.active,
+	image_url: item.image_url,
+	unit_price: item.unit_price,
+	units_in_stock: item.units_in_stock,
+	date_created: item.date_created,
+	last_updated: item.last_updated,
+	artist: {
+		id: item.artist_table_id,
+		name: item.artist_name
+	},
+	category: {
+		id: item.category_table_id,
+		name: item.category_name
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="468e4038-1629-4f26-a209-bd585ba4eaa3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var orderDirection = if(lower(vars.order) == 'desc') ((payload orderBy $[vars.sort])[-1 to 0]) else (payload orderBy $[vars.sort])
+---
+orderDirection]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

@@ -16,21 +16,20 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
-
-var ascending = (payload map {
-	id: $.id,
-	name: $.name
-} orderBy $[(vars.sort)])
-
-var descending = (payload map {
-	id: $.id,
-	name: $.name
-} orderBy $[(vars.sort)]) [-1 to 0]
-
-var finalOutput = if(lower(vars.order) == 'desc') descending else ascending
-
 ---
-finalOutput]]></ee:set-payload>
+payload map {
+	id: $.id,
+	name: $.name
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="b71cad43-5352-4cbd-8c07-82ebc53fe565" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var orderDirection = if(lower(vars.order) == 'desc') ((payload orderBy $[vars.sort])[-1 to 0]) else (payload orderBy $[vars.sort])
+---
+orderDirection]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</flow>
