@@ -10,7 +10,7 @@
 	<munit:config name="category-implementation-test-suite.xml" />
 	<munit:test name="get-categories-test" doc:id="3e6fc6bd-3d28-4c23-9a14-2a18e2c9c6cc" description="Test">
 		<munit:behavior >
-			<munit-tools:mock-when doc:name="Mock when select categories" doc:id="7bf2d77a-f356-4baa-9ab9-78f7ba76991c" processor="db:select">
+			<munit-tools:mock-when doc:name="select-all-categories" doc:id="7bf2d77a-f356-4baa-9ab9-78f7ba76991c" processor="db:select">
 				<munit-tools:with-attributes >
 					<munit-tools:with-attribute whereValue="05040355-41c7-4539-bad0-51227d58fffe" attributeName="doc:id" />
 				</munit-tools:with-attributes>
@@ -21,22 +21,22 @@
 </munit-tools:mock-when>
 		</munit:behavior>
 		<munit:execution >
-			<munit:set-event doc:name="Set Event - GET categories" doc:id="692906d9-f05c-4d20-9c5b-baf8baacb22d" />
+			<munit:set-event doc:name="get-categories" doc:id="692906d9-f05c-4d20-9c5b-baf8baacb22d" />
 			<flow-ref doc:name="Flow-ref to get-categories" doc:id="f26a2ed6-79dd-4984-9a01-600d47689214" name="get-categories"/>
 		</munit:execution>
 		<munit:validation >
-			<munit-tools:verify-call doc:name="Verify call" doc:id="2ad38233-3364-4d4d-ab84-7187d8d19e74" processor="db:select" times="1">
+			<munit-tools:verify-call doc:name="to-select-all-categories" doc:id="2ad38233-3364-4d4d-ab84-7187d8d19e74" processor="db:select" times="1">
 				<munit-tools:with-attributes >
 					<munit-tools:with-attribute whereValue="05040355-41c7-4539-bad0-51227d58fffe" attributeName="doc:id" />
 				</munit-tools:with-attributes>
 
 			</munit-tools:verify-call>
-			<munit-tools:assert-that doc:name="Assert that" doc:id="46099f76-874b-48fa-a5c5-46b0616cb385" is="#[MunitTools::notNullValue()]" message="Empty collection" expression="#[payload]"/>
+			<munit-tools:assert-that doc:name="payload-is-not-null" doc:id="46099f76-874b-48fa-a5c5-46b0616cb385" is="#[MunitTools::notNullValue()]" message="test failed, payload is null" expression="#[payload]"/>
 		</munit:validation>
 	</munit:test>
 	<munit:test name="get-category-by-id-test" doc:id="941c8905-6b8b-460a-8ce7-698f5c1cfb72" description="Test">
 		<munit:behavior >
-			<munit-tools:mock-when doc:name="Mock when select by id" doc:id="c3f12523-632e-471e-8b95-74cf679cbd40" processor="db:select">
+			<munit-tools:mock-when doc:name="select-category-by-id" doc:id="c3f12523-632e-471e-8b95-74cf679cbd40" processor="db:select">
 				<munit-tools:with-attributes >
 					<munit-tools:with-attribute whereValue="bfb07220-94d6-4e42-8348-7aa309cfabda" attributeName="doc:id" />
 				</munit-tools:with-attributes>
@@ -47,24 +47,24 @@
 </munit-tools:mock-when>
 		</munit:behavior>
 		<munit:execution >
-			<munit:set-event doc:name="Set Event GET by id#" doc:id="732cbc9e-83bd-424b-82f9-ebdb106285f1" >
+			<munit:set-event doc:name="get-category-by-id" doc:id="732cbc9e-83bd-424b-82f9-ebdb106285f1" >
 				<munit:attributes value="# [{uriParams: {id: '1'}}]" />
 			</munit:set-event>
 			<flow-ref doc:name="Flow-ref to get-category-by-id" doc:id="af4a27ba-6c01-4bdc-a35d-ad6e9187754e" name="get-category-by-id"/>
 		</munit:execution>
 		<munit:validation >
-			<munit-tools:verify-call doc:name="Verify call select by id" doc:id="7bd5d8f8-0040-4a8d-9d9a-a04782d90e95" processor="db:select" times="1">
+			<munit-tools:verify-call doc:name="to-select-category-by-id" doc:id="7bd5d8f8-0040-4a8d-9d9a-a04782d90e95" processor="db:select" times="1">
 				<munit-tools:with-attributes >
 					<munit-tools:with-attribute whereValue="bfb07220-94d6-4e42-8348-7aa309cfabda" attributeName="doc:id" />
 				</munit-tools:with-attributes>
 
 			</munit-tools:verify-call>
-			<munit-tools:assert-that doc:name="Assert that" doc:id="fcdec51d-a3f0-4a65-af5f-8583fa0d43e2" expression="#[payload.name]" is='#[MunitTools::containsString("CD")]' message="Failed id"/>
+			<munit-tools:assert-that doc:name="field-contains-expected-string" doc:id="fcdec51d-a3f0-4a65-af5f-8583fa0d43e2" expression="#[payload.name]" is='#[MunitTools::containsString("CD")]' message="test failed, no match"/>
 		</munit:validation>
 	</munit:test>
 	<munit:test name="get-category-by-id-test-error" doc:id="6bbec678-df66-4d6a-bd9e-017692a7fd4e" description="Test">
 		<munit:behavior >
-			<munit-tools:mock-when doc:name="Mock when exception thrown" doc:id="2e89fe12-3ae3-4d88-9b49-525dc45c754c" processor="validation:is-not-empty-collection">
+			<munit-tools:mock-when doc:name="exception-thrown" doc:id="2e89fe12-3ae3-4d88-9b49-525dc45c754c" processor="validation:is-not-empty-collection">
 				<munit-tools:with-attributes >
 					<munit-tools:with-attribute whereValue="4bb37dd1-eb88-4984-b9d9-08c338f4dbd9" attributeName="doc:id" />
 				</munit-tools:with-attributes>
@@ -85,7 +85,7 @@
 			</try>
 		</munit:execution>
 		<munit:validation>
-			<munit-tools:assert-that doc:name="Assert that" doc:id="a15a9903-9313-4cae-9e7a-671a7a40b4c8" expression="#[payload.message]" is='#[MunitTools::containsString("Category not found!")]'/>
+			<munit-tools:assert-that doc:name="message-contains-expected-string" doc:id="a15a9903-9313-4cae-9e7a-671a7a40b4c8" expression="#[payload.message]" is='#[MunitTools::containsString("Category not found!")]' message="test failed, no match"/>
 		</munit:validation>
 	</munit:test>
 

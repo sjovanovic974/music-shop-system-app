@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="product-main-implementation-test-suite.xml" />
+	<munit:test name="product-main-implementation-test-suite-get-productsTest" doc:id="f91867fa-6487-4ae5-a947-03022f254e47" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="select-all-products-from-db" doc:id="50b51d58-f2f1-47cf-9d9e-057522c9b206" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="fdc76583-c272-440c-bac7-5c04d77d88df" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[&#10;	%dw 2.0&#10;	output application/json&#10;	---&#10;[{&quot;id&quot;:1,&quot;sku&quot;:&quot;CD-000001&quot;,&quot;name&quot;:&quot;Master of Puppets&quot;,&quot;description&quot;:&quot;Seminal album form early 80's&quot;,&quot;active&quot;:true,&quot;image_url&quot;:&quot;https://community.mp3tag.de/uploads/default/original/2X/a/acf3edeb055e7b77114f9e393d1edeeda37e50c9.png&quot;,&quot;unit_price&quot;:15.99,&quot;units_in_stock&quot;:12,&quot;date_created&quot;:&quot;2022-08-12T09:16:43.000Z&quot;,&quot;last_updated&quot;:&quot;2022-08-12T09:17:59.161Z&quot;,&quot;artist&quot;:{&quot;id&quot;:1,&quot;name&quot;:&quot;Metallica&quot;},&quot;category&quot;:{&quot;id&quot;:1,&quot;name&quot;:&quot;CD&quot;}},{&quot;id&quot;:2,&quot;sku&quot;:&quot;LP-000001&quot;,&quot;name&quot;:&quot;Live after Death&quot;,&quot;description&quot;:&quot;Famous live album form mid-80's&quot;,&quot;active&quot;:true,&quot;image_url&quot;:&quot;https://community.mp3tag.de/uploads/default/original/2X/a/acf3edeb055e7b77114f9e393d1edeeda37e50c9.png&quot;,&quot;unit_price&quot;:35.99,&quot;units_in_stock&quot;:3,&quot;date_created&quot;:&quot;2022-04-12T09:13:43.000Z&quot;,&quot;last_updated&quot;:&quot;2022-08-12T09:17:59.161Z&quot;,&quot;artist&quot;:{&quot;id&quot;:2,&quot;name&quot;:&quot;Iron Maiden&quot;},&quot;category&quot;:{&quot;id&quot;:2,&quot;name&quot;:&quot;LP&quot;}}]&#10;&#10;]" mediaType="application/json" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="get-products" doc:id="a3c38899-d572-4264-89b5-30b49577465d" />
+			<flow-ref doc:name="Flow-ref to get-products" doc:id="2014c7e7-ca14-4c68-99be-e11a5ab63ae9" name="get-products"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="to-select-all-products" doc:id="a32de36b-c5a6-43f1-bca4-21843a083ca7" processor="db:select" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="fdc76583-c272-440c-bac7-5c04d77d88df" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:assert-that doc:name="payload-is-not-null" doc:id="48323a98-2209-410c-96d0-cbaa9333c9da" is="#[MunitTools::notNullValue()]" message="test failed, payload is null" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="get-product-by-id-test" doc:id="eecb1713-f394-40ff-9213-e60daebd8e2a" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="select-product-by-id" doc:id="4f82b3e3-4626-4c9c-91a9-3a30c26ef8a3" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="3c2899f0-1f7a-49bc-bc2c-1aa4289601d3" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[&#10;	%dw 2.0&#10;	output application/json&#10;		---&#10;[{&#10;  &quot;id&quot;: 1,&#10;  &quot;sku&quot;: &quot;CD-000001&quot;,&#10;  &quot;name&quot;: &quot;Master of Puppets&quot;,&#10;  &quot;description&quot;: &quot;Seminal album form early 80's&quot;,&#10;  &quot;active&quot;: true,&#10;  &quot;image_url&quot;: &quot;https://community.mp3tag.de/uploads/default/original/2X/a/acf3edeb055e7b77114f9e393d1edeeda37e50c9.png&quot;,&#10;  &quot;unit_price&quot;: 15.99,&#10;  &quot;units_in_stock&quot;: 12,&#10;  &quot;date_created&quot;: &quot;2022-08-12T09:16:43.000Z&quot;,&#10;  &quot;last_updated&quot;: &quot;2022-08-12T09:17:59.161Z&quot;,&#10;  &quot;artist&quot;: {&#10;    &quot;id&quot;: 1,&#10;    &quot;name&quot;: &quot;Metallica&quot;&#10;  },&#10;  &quot;category&quot;: {&#10;    &quot;id&quot;: 1,&#10;    &quot;name&quot;: &quot;CD&quot;&#10;  }&#10;}&#10;]]" mediaType="application/json" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="get-product-by-id" doc:id="b6a2e833-b254-4912-90ce-d149fa2e55ba" >
+				<munit:attributes value="# [{uriParams: {id: '1'}}]" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to get-product-by-id" doc:id="dcdf314f-b58e-4342-a3f6-06a49b97a73a" name="get-product-by-id"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="to-select-product-by-id" doc:id="10edc54b-f785-4276-9775-b3d4394ceb58" processor="db:select" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="3c2899f0-1f7a-49bc-bc2c-1aa4289601d3" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:assert-that doc:name="field-contains-string" doc:id="68f199b5-9fd3-4250-b2b7-b34bd5f46aad" message="test failed, no match" expression="#[payload.name]" is='#[MunitTools::containsString("Puppets")]' />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="get-product-by-id-test-error" doc:id="a9200e5b-69ea-41b9-92f6-229d741bdd37" description="Test" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="exception-thrown" doc:id="15a30a97-56a5-476b-a67b-090c54178ca1" processor="validation:is-not-empty-collection" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="634394d2-b532-45e9-99c4-c9a6f884dc63" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="VALIDATION:EMPTY_COLLECTION" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="64d03dde-aed4-43a5-acf2-64706eb863fb" />
+			<try doc:name="Try" doc:id="9c6cf41a-c961-4ec5-abab-96490678a349" >
+				<flow-ref doc:name="Flow-ref to get-product-by-id" doc:id="370018ce-8ef7-42e1-b459-01bac4d22361" name="get-product-by-id" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="021a8101-d649-431c-97c1-1c700519a844" type="VALIDATION:EMPTY_COLLECTION" >
+						<logger level="INFO" doc:name="Logger" doc:id="f46ecf62-c2ec-403a-861b-9e8f53d541df" />
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="message-contains-expected-string" doc:id="71a1efb9-4b06-4135-afa7-5e3ff7c3e336" message="test failed, no match" expression="#[payload.message]" is='#[MunitTools::containsString("Product not found!")]' />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="delete-product-test" doc:id="f706cd33-30a4-4377-869f-2b0296a4b14b" description="Test" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="deleting-product" doc:id="dfe98394-a3af-474b-9c81-be1b36dc9b2d" processor="db:delete" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="6edb7905-6932-4c47-af84-1045835fbb75" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="delete-product-by-id" doc:id="df794409-f32d-474a-984f-fe14bc2265b1" >
+				<munit:attributes value="# [{uriParams: {id: '1'}}]" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to delete-product" doc:id="21c5cff5-545f-4ebe-92eb-b21152460635" name="delete-product" />
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="message-contains-expected-string" doc:id="68381051-a675-411d-8390-7f617c759a12" message="test failed, no match" expression="#[payload.message]" is='#[MunitTools::containsString("Product deleted")]' />
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

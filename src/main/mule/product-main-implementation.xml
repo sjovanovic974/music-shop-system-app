@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:java="http://www.mulesoft.org/schema/mule/java" xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd">
+	
 	<flow name="get-products" doc:id="e38ab034-41dc-4664-a6ac-664d4e757454" >
-		<flow-ref doc:name="Flow Reference" doc:id="8d084b7b-ecdf-44b9-b530-871ef4a7c4b6" name="pagination" />
-		<db:select doc:name="Select" doc:id="fdc76583-c272-440c-bac7-5c04d77d88df" config-ref="Database_Config">
+		<flow-ref doc:name="pagination" doc:id="8d084b7b-ecdf-44b9-b530-871ef4a7c4b6" name="pagination" />
+		<db:select doc:name="db-select-all-products" doc:id="fdc76583-c272-440c-bac7-5c04d77d88df" config-ref="Database_Config">
 			<db:sql ><![CDATA[#["SELECT products.*, product_categories.id AS category_table_id, product_categories.name AS category_name,
 artists.id AS artist_table_id, artists.name AS artist_name FROM products
 JOIN product_categories ON products.category_id = product_categories.id
@@ -15,10 +19,10 @@ JOIN artists ON products.artist_id = artists.id
 ORDER BY $(vars.sort)
 LIMIT $(vars.size) OFFSET $(vars.offset)"]]]></db:sql>
 		</db:select>
-		<ee:transform doc:name="Transform Message" doc:id="a213c8d6-57f0-4682-8b36-eeea09fe4986" >
+		<ee:transform doc:name="payload-map-to-product-json" doc:id="a213c8d6-57f0-4682-8b36-eeea09fe4986" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
+output application/json skipNullOn="everywhere"
 ---
 payload map (item, index) -> {
 	id: item.id,
@@ -42,14 +46,218 @@ payload map (item, index) -> {
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<ee:transform doc:name="Transform Message" doc:id="468e4038-1629-4f26-a209-bd585ba4eaa3" >
+		<ee:transform doc:name="choose-order-direction" doc:id="468e4038-1629-4f26-a209-bd585ba4eaa3" >
 			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
-var orderDirection = if(lower(vars.order) == 'desc') ((payload orderBy $[vars.sort])[-1 to 0]) else (payload orderBy $[vars.sort])
----
-orderDirection]]></ee:set-payload>
+				<ee:set-payload resource="myscripts/orderBy.dwl"></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</flow>
+	<flow name="get-product-by-id" doc:id="dc8c2e63-a0a4-4292-afd4-b9831ba84766" >
+		<db:select doc:name="db-select-product-by-id" doc:id="3c2899f0-1f7a-49bc-bc2c-1aa4289601d3" config-ref="Database_Config">
+			<db:sql ><![CDATA[SELECT products.*, product_categories.id AS category_table_id, product_categories.name AS category_name,
+artists.id AS artist_table_id, artists.name AS artist_name FROM products
+JOIN product_categories ON products.category_id = product_categories.id
+JOIN artists ON products.artist_id = artists.id
+WHERE products.id = :id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{'id': attributes.uriParams.'id'}]]]></db:input-parameters>
+		</db:select>
+		<validation:is-not-empty-collection doc:name="is-not-empty-collection" doc:id="634394d2-b532-45e9-99c4-c9a6f884dc63" message="Product not found" config-ref="Validation_Config"/>
+		<ee:transform doc:name="single-product-json" doc:id="bff50cc8-f031-4def-a0ff-15a55e47c0d8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json skipNullOn="everywhere"
+---
+{
+	id: payload[0].id,
+	sku: payload[0].sku,
+	name: payload[0].name,
+	description: payload[0].description,
+	active: payload[0].active,
+	image_url: payload[0].image_url,
+	unit_price: payload[0].unit_price,
+	units_in_stock: payload[0].units_in_stock,
+	date_created: payload[0].date_created,
+	last_updated: payload[0].last_updated,
+	artist: {
+		id: payload[0].artist_table_id,
+		name: payload[0].artist_name
+	},
+	category: {
+		id: payload[0].category_table_id,
+		name: payload[0].category_name
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="6647f683-0ac3-483d-9d98-7bf93faef919" type="VALIDATION:EMPTY_COLLECTION" >
+				<ee:transform doc:name="product-not-found-message-json" doc:id="4f9e72ba-3a9b-4878-9874-e2f4504e2e09" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Product not found!"
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="httpStatus" ><![CDATA[404]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="delete-product" doc:id="24bf64db-422b-4442-bdfa-93ace113f9d3" >
+		<db:delete doc:name="db-delete-product-by-id" doc:id="6edb7905-6932-4c47-af84-1045835fbb75" config-ref="Database_Config" >
+			<db:sql ><![CDATA[DELETE FROM products WHERE id = :id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{'id': attributes.uriParams.'id'}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="product-deleted-message-json" doc:id="70d9f1f3-3779-47dd-ac7f-a82960aa6ae7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Product deleted"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="post-product" doc:id="e1e92a46-c7d4-4462-bad4-eb3387f36dd5" >
+		<flow-ref doc:name="check-if-artist-is-available" doc:id="088246c6-a2a6-43dd-b844-b1a336ab0614" name="check-artist" />
+		<flow-ref doc:name="check-if-category-is-available" doc:id="89c80ed9-f3dc-47b0-8b19-a4a4d9b57551" name="check-category" />
+		<flow-ref doc:name="check-sku" doc:id="520be5d1-9bfb-415a-9832-576e9a68e929" name="check-sku" />
+		<os:retrieve-all doc:name="retrieve-all" doc:id="58f6ae64-e2da-46d0-9e99-2aa66aba50be" objectStore="Object_store" target="objectStore" />
+		<db:insert doc:name="db-insert-product" doc:id="c1f8d8b2-b0c6-4c04-ab24-f3c49a830d39" config-ref="Database_Config">
+			<db:sql><![CDATA[INSERT INTO products (sku, name, description, image_url, unit_price, units_in_stock, artist_id, category_id, date_created) 
+VALUES (:sku, :name, :description, :image_url, :unit_price, :units_in_stock, :artist_id, :category_id, :date_created)]]></db:sql>
+			<db:input-parameters><![CDATA[#[%dw 2.0
+	import * from dw::core::Strings
+	---
+
+{ 
+	sku: (vars.objectStore.sku as String) replace '"' with '',
+	name: payload.name,
+	description: payload.description,
+	image_url: payload.image_url,
+	unit_price: payload.unit_price,
+	units_in_stock: payload.units_in_stock,
+	artist_id: vars.objectStore.artistId,
+	category_id: vars.objectStore.categoryId,
+	date_created: now() as String {format: "yyyy-MM-dd hh:mm:ss.SSS"}
+	
+}]]]></db:input-parameters>
+		</db:insert>
+		<db:select doc:name="db-select-newly-added-product-by-sku" doc:id="58b17204-e83d-4cda-8a0c-fae28b04c64d" config-ref="Database_Config">
+			<db:sql><![CDATA[SELECT products.*, product_categories.id AS category_table_id, product_categories.name AS category_name,
+artists.id AS artist_table_id, artists.name AS artist_name FROM products
+JOIN product_categories ON products.category_id = product_categories.id
+JOIN artists ON products.artist_id = artists.id
+WHERE products.sku = :sku]]></db:sql>
+			<db:input-parameters><![CDATA[#[%dw 2.0
+	import * from dw::core::Strings
+	---
+
+{ 
+	sku: (vars.objectStore.sku as String) replace '"' with ''
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="single-product-json" doc:id="65e7d0bf-1574-44d1-83fd-281943d9f650">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json skipNullOn="everywhere"
+---
+{
+	id: payload[0].id,
+	sku: payload[0].sku,
+	name: payload[0].name,
+	description: payload[0].description,
+	active: payload[0].active,
+	image_url: payload[0].image_url,
+	unit_price: payload[0].unit_price,
+	units_in_stock: payload[0].units_in_stock,
+	date_created: payload[0].date_created,
+	last_updated: payload[0].last_updated,
+	artist: {
+		id: payload[0].artist_table_id,
+		name: payload[0].artist_name
+	},
+	category: {
+		id: payload[0].category_table_id,
+		name: payload[0].category_name
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="2aa27a69-8b47-4495-ba88-b13f10379510" type="VALIDATION:EMPTY_COLLECTION">
+				<ee:transform doc:name="validation-message-json" doc:id="f1ed6124-7e8d-41cb-97d5-1c7d1f36ba02">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": error.description
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="httpStatus"><![CDATA[404]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<sub-flow name="check-artist" doc:id="a1f79b8d-4d33-4f44-bd36-bd52cc809023" >
+		<set-variable value="#[upper(payload.artist)]" doc:name="artist-name" doc:id="42fa8564-fdf4-4ad8-9884-3cc65706eb05" variableName="artist_name"/>
+		<db:select doc:name="select-artist-by-name" doc:id="9c35db48-1992-4d0e-a70f-d9c09639018e" config-ref="Database_Config" target="artist_check_result">
+			<db:sql ><![CDATA[SELECT * FROM artists WHERE name = :name]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{name: vars.artist_name}]]]></db:input-parameters>
+		</db:select>
+		<validation:is-not-empty-collection doc:name="is-not-empty-collection" doc:id="4a9e8ea3-95a8-4ebf-b207-5f8953724a30" values="#[vars.artist_check_result]" message="Artist not found"/>
+		<os:store doc:name="store-artist-id" doc:id="1b114445-9162-40c4-8b8b-2756cfad3e50" key="artistId" objectStore="Object_store">
+			<os:value ><![CDATA[#[vars.artist_check_result[0].id]]]></os:value>
+		</os:store>
+	</sub-flow>
+	<sub-flow name="check-category" doc:id="5f116437-5354-44f2-af42-e5bcd13e88f6" >
+		<set-variable value="#[upper(payload.category)]" doc:name="category-name" doc:id="eba43081-503b-4837-82b0-8c8e41573ded" variableName="category_name"/>
+		<db:select doc:name="select-category-by-name" doc:id="e35e3090-a439-49ac-b343-ec2f53d21f8f" config-ref="Database_Config" target="category_check_result">
+			<db:sql ><![CDATA[SELECT * FROM product_categories WHERE name = :name]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{name: vars.category_name}]]]></db:input-parameters>
+		</db:select>
+		<validation:is-not-empty-collection doc:name="is-not-empty-collection" doc:id="f3acd8ea-386e-449d-a404-9542c75807ab" values="#[vars.category_check_result]" message="Category not found"/>
+		<os:store doc:name="store-category-id" doc:id="84428fd8-55fc-470b-9da1-ccc3d4fd5b38" key="categoryId" objectStore="Object_store" >
+			<os:value ><![CDATA[#[vars.category_check_result[0].id]]]></os:value>
+		</os:store>
+	</sub-flow>
+	<sub-flow name="check-sku" doc:id="552c9690-6506-4382-b9a4-5fbe530e63e8" >
+		<os:retrieve-all doc:name="Retrieve all" doc:id="ea410cb1-b379-431e-9e4f-ee216b6df8fb" objectStore="Object_store" target="objectStore"/>
+		<db:select doc:name="select-last-saved-for-a-category" doc:id="5e2ec463-283d-4d2c-80af-fc5e2c3f836e" config-ref="Database_Config" target="currentSku">
+			<db:sql ><![CDATA[SELECT sku FROM products
+JOIN product_categories ON products.category_id = :categoryId 
+ORDER BY products.id DESC LIMIT 1]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+ 	categoryId:  vars.objectStore.categoryId
+}]]]></db:input-parameters>
+		</db:select>
+		<choice doc:name="Choice" doc:id="cacb7d9a-62e0-4521-b8e5-ba7437a44534" >
+			<when expression="#[vars.currentSku != null]">
+				<java:invoke-static method="getNextSku(java.lang.String)" doc:name="method-to-get-next-sku" doc:id="7885cb63-5d79-4531-b868-93510588f418" class="Sku" target="newSku">
+					<java:args ><![CDATA[#[%dw 2.0
+output application/java
+---
+{
+	oldSku: vars.currentSku[0].sku
+}]]]></java:args>
+				</java:invoke-static>
+				<os:store doc:name="store-sku" doc:id="5b42e26d-6ec7-41ec-8f76-6fbbe47190ae" key="sku" objectStore="Object_store">
+					<os:value><![CDATA[#[vars.newSku]]]></os:value>
+				</os:store>
+			</when>
+			<otherwise >
+				<os:store doc:name="store-sku" doc:id="610d2b2e-62cc-4a2d-9ffd-59d9896f353a" key="sku" objectStore="Object_store" >
+					<os:value ><![CDATA[#[upper(payload.category) ++ '-000001']]]></os:value>
+				</os:store>
+			</otherwise>
+		</choice>
+	</sub-flow>
 </mule>

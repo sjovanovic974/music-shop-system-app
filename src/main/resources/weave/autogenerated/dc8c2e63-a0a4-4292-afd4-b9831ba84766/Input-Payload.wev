@@ -1,0 +1,26 @@
+%dw 2.0
+
+type auto_dc8c2e63_a0a4_4292_afd4_b9831ba84766_Input_Payload = {
+  last_updated?: String, 
+  artist: {
+    name: String, 
+    id?: Number, 
+    _?: Any
+  } {"description": "Product's artist"}, 
+  image_url?: String, 
+  units_in_stock: Number, 
+  date_created?: String, 
+  name: String, 
+  description?: String, 
+  active?: Boolean, 
+  id?: Number, 
+  sku?: String, 
+  unit_price: Number, 
+  category: {
+    name: "CD" | "DVD" | "LP" | "BOOK", 
+    id?: Number, 
+    _?: Any
+  } {"description": "Product's category"}, 
+  _?: Any
+} {"description": "Main resource type"}
+

@@ -73,19 +73,7 @@ output application/json
 		<flow-ref doc:name="put-category" doc:id="94244f0b-3a27-4a98-9690-d79375859ed4" name="put-category"/>
     </flow>
     <flow name="delete:\products\(id):music-store-system-api-config">
-        <ee:transform>
-            <ee:variables>
-                <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-        <ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-"Product deleted"]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<flow-ref doc:name="delete-product" doc:id="81107857-764a-49fd-9068-10cd5bf6fdc2" name="delete-product"/>
     </flow>
     <flow name="delete:\artists\(id):music-store-system-api-config">
 		<flow-ref doc:name="delete-artist" doc:id="f783cf3c-38fb-4014-8cc1-19ec121ef3ab" name="delete-artist"/>
@@ -378,38 +366,7 @@ output application/json
         </ee:transform>
     </flow>
     <flow name="get:\products\(id):music-store-system-api-config">
-        <ee:transform>
-            <ee:variables>
-                <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-        <ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  id: 1,
-  sku: "CD-000001",
-  name: "Master of Puppets",
-  description: "Seminal album form early 80's",
-  active: true,
-  image_url: "https://community.mp3tag.de/uploads/default/original/2X/a/acf3edeb055e7b77114f9e393d1edeeda37e50c9.png",
-  unit_price: 15.99,
-  units_in_stock: 12,
-  date_created: "2022-08-12T09:16:43.000Z",
-  last_updated: "2022-08-12T09:17:59.161Z",
-  artist: {
-    id: 1,
-    name: "Metallica"
-  },
-  category: {
-    id: 1,
-    name: "CD"
-  }
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<flow-ref doc:name="get-product-by-id" doc:id="d643cfbd-aa8a-4b66-bb5a-dd854d1eb590" name="get-product-by-id"/>
     </flow>
     <flow name="get:\categories\(id):music-store-system-api-config">
 		<flow-ref doc:name="get-category-by-id" doc:id="bf21d94e-3170-4992-95aa-2564799f41a9" name="get-category-by-id"/>
@@ -423,33 +380,7 @@ output application/json
     <flow name="post:\categories:application\json:music-store-system-api-config">
 		<flow-ref doc:name="post-category" doc:id="c327480f-91f0-4d60-a533-4b0f2537c102" name="post-category"/>
     </flow>
-    <flow name="post:\products:application\json:music-store-system-api-config">
-        <ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  id: 1,
-  sku: "CD-000001",
-  name: "Master of Puppets",
-  description: "Seminal album form early 80's",
-  active: true,
-  image_url: "https://community.mp3tag.de/uploads/default/original/2X/a/acf3edeb055e7b77114f9e393d1edeeda37e50c9.png",
-  unit_price: 15.99,
-  units_in_stock: 12,
-  date_created: "2022-08-12T09:16:43.000Z",
-  last_updated: "2022-08-12T09:17:59.161Z",
-  artist: {
-    id: 1,
-    name: "Metallica"
-  },
-  category: {
-    id: 1,
-    name: "CD"
-  }
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+    <flow name="post:\products:application\json:music-store-system-api-config" doc:id="d4536689-a937-4976-9c62-5b9bedab67c8">
+		<flow-ref doc:name="post-product" doc:id="e3a3c2bf-7497-482e-a769-baecda0b1f41" name="post-product"/>
     </flow>
 </mule>

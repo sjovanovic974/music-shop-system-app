@@ -8,11 +8,11 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
 
 	<flow name="get-artists" doc:id="fda38ede-4023-4667-8a04-d968e99ed39a" >
-		<flow-ref doc:name="Flow Reference" doc:id="be2cb338-96e5-4fa9-beb6-dab4609bb2f2" name="pagination" />
-		<db:select doc:name="Select all artists" doc:id="cb8edf16-7e93-4529-b86f-f098ba0e9b90" config-ref="Database_Config">
+		<flow-ref doc:name="pagination" doc:id="be2cb338-96e5-4fa9-beb6-dab4609bb2f2" name="pagination" />
+		<db:select doc:name="db-select-all-artists" doc:id="cb8edf16-7e93-4529-b86f-f098ba0e9b90" config-ref="Database_Config">
 			<db:sql ><![CDATA[#["SELECT * FROM artists ORDER BY $(vars.sort) LIMIT $(vars.size) OFFSET $(vars.offset)"]]]></db:sql>
 		</db:select>
-		<ee:transform doc:name="Transform Message" doc:id="43c6b79d-a6b2-485c-802c-195e944e6682" >
+		<ee:transform doc:name="payload-map-to-artist-json" doc:id="43c6b79d-a6b2-485c-802c-195e944e6682" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -23,36 +23,26 @@ payload map {
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<ee:transform doc:name="Transform Message" doc:id="da5e5bb2-f006-4b9d-83e0-f73e2bc9606e" >
+		<ee:transform doc:name="choose-order-direction" doc:id="da5e5bb2-f006-4b9d-83e0-f73e2bc9606e" >
 			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
-var orderDirection = if(lower(vars.order) == 'desc') ((payload orderBy $[vars.sort])[-1 to 0]) else (payload orderBy $[vars.sort])
----
-orderDirection]]></ee:set-payload>
+				<ee:set-payload resource="myscripts/orderBy.dwl"></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</flow>
 	<flow name="get-artist-by-id" doc:id="ab1b6b07-9b00-4cb7-a670-9bf4965b4c61" >
-		<db:select doc:name="Select artist by id" doc:id="626c0ed8-085d-4a54-8314-be69f82a8334" config-ref="Database_Config">
+		<db:select doc:name="db-select-artist-by-id" doc:id="626c0ed8-085d-4a54-8314-be69f82a8334" config-ref="Database_Config">
 			<db:sql ><![CDATA[SELECT * FROM artists WHERE id = :id]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{'id': attributes.uriParams.'id'}]]]></db:input-parameters>
 		</db:select>
-		<validation:is-not-empty-collection doc:name="Is not empty collection" doc:id="c2ff6f6a-354c-47ca-b581-db7782f24e49" />
-		<ee:transform doc:name="Transform Message" doc:id="7fb35f42-8e8a-4107-89c1-5be9a69c5ba5" >
+		<validation:is-not-empty-collection doc:name="is-not-empty-collection" doc:id="c2ff6f6a-354c-47ca-b581-db7782f24e49" />
+		<ee:transform doc:name="payload-to-single-artist-json" doc:id="7fb35f42-8e8a-4107-89c1-5be9a69c5ba5" >
 			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	id: payload[0].id,
-	name: payload[0].name
-}]]></ee:set-payload>
+				<ee:set-payload resource="myscripts/singleArtistOrCategoryMappingJSON.dwl"></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<error-handler >
 			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="d5e6e488-cd7f-46b7-b865-5f28096606db" type="VALIDATION:EMPTY_COLLECTION">
-				<ee:transform doc:name="Transform Message" doc:id="abadca5d-efa1-4b15-9aaa-af0bd2066f07" >
+				<ee:transform doc:name="artist-not-found-message-json" doc:id="abadca5d-efa1-4b15-9aaa-af0bd2066f07" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -69,11 +59,11 @@ output application/json
 		</error-handler>
 	</flow>
 	<flow name="delete-artist" doc:id="cfcf2c26-eb6c-468b-a83c-1d646b09c8f8" >
-		<db:delete doc:name="Delete artist" doc:id="768fdab5-b3a3-4b42-8b13-cae8be48099d" config-ref="Database_Config">
+		<db:delete doc:name="db-delete-artist-by-id" doc:id="768fdab5-b3a3-4b42-8b13-cae8be48099d" config-ref="Database_Config">
 			<db:sql ><![CDATA[DELETE FROM artists WHERE id = :id]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{'id': attributes.uriParams.'id'}]]]></db:input-parameters>
 		</db:delete>
-		<ee:transform doc:name="Transform Message" doc:id="356d0b6e-3a44-4a5b-b80b-94139278f09f" >
+		<ee:transform doc:name="artist-deleted-message-json" doc:id="356d0b6e-3a44-4a5b-b80b-94139278f09f" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -85,29 +75,23 @@ output application/json
 		</ee:transform>
 	</flow>
 	<flow name="post-artist" doc:id="85d39815-7b61-4338-b049-a36a33b07e97" >
-		<set-variable value="#[payload.name]" doc:name="Artist name" doc:id="df4191e0-975f-406a-a182-7bf50659209a" variableName="artist_name"/>
-		<db:insert doc:name="Insert artist" doc:id="8575fce5-01d4-499f-a461-0abc7b605144" config-ref="Database_Config">
+		<set-variable value="#[payload.name]" doc:name="artist-name" doc:id="df4191e0-975f-406a-a182-7bf50659209a" variableName="artist_name"/>
+		<db:insert doc:name="db-insert-artist" doc:id="8575fce5-01d4-499f-a461-0abc7b605144" config-ref="Database_Config">
 			<db:sql ><![CDATA[INSERT INTO artists (name) VALUES (:name)]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{ 'name': vars.artist_name }]]]></db:input-parameters>
 		</db:insert>
-		<db:select doc:name="Select newly added artist" doc:id="6a00ec4a-cc13-469c-9b7f-4d5ed75e7071" config-ref="Database_Config">
+		<db:select doc:name="db-select-newly-added-artist-by-name" doc:id="6a00ec4a-cc13-469c-9b7f-4d5ed75e7071" config-ref="Database_Config">
 			<db:sql ><![CDATA[SELECT * FROM artists WHERE name = :name]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{'name': vars.artist_name}]]]></db:input-parameters>
 		</db:select>
-		<ee:transform doc:name="Transform Message" doc:id="5690edc6-b301-4f25-8278-737166531eab" >
+		<ee:transform doc:name="payload-to-single-artist-json" doc:id="5690edc6-b301-4f25-8278-737166531eab" >
 			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	id: payload[0].id,
-	name: payload[0].name
-}]]></ee:set-payload>
+				<ee:set-payload resource="myscripts/singleArtistOrCategoryMappingJSON.dwl"></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<error-handler >
 			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="86886cc0-9ca9-4718-923a-1b41f35bda57" type="DB:QUERY_EXECUTION">
-				<ee:transform doc:name="Transform Message" doc:id="9035c7fe-58d1-4f9b-a6d5-6210f3285866" >
+				<ee:transform doc:name="post-error-message-json" doc:id="9035c7fe-58d1-4f9b-a6d5-6210f3285866" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -125,26 +109,20 @@ output application/json
 	</flow>
 	<flow name="put-artist" doc:id="95224667-9855-42f7-95e0-d22062cad1dd" >
 		<set-variable value="#[attributes.uriParams.id]" doc:name="artist-id" doc:id="b7a19d0a-1e89-442d-a21c-17d41f8070b3" variableName="artist_id"/>
-		<db:update doc:name="Update artist" doc:id="5ae64f8c-d5fd-4f81-8cff-6d82424fd851" config-ref="Database_Config">
+		<db:update doc:name="db-update-artist-by-id" doc:id="5ae64f8c-d5fd-4f81-8cff-6d82424fd851" config-ref="Database_Config">
 			<db:sql ><![CDATA[UPDATE artists SET name = :name WHERE id = :id]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{
 	'id': vars.artist_id,
 	'name': payload.name
 }]]]></db:input-parameters>
 		</db:update>
-		<db:select doc:name="Select newly added artist" doc:id="3cd91483-fb61-4290-b63a-d0628330ff91" config-ref="Database_Config" >
+		<db:select doc:name="db-select-newly-added-artist-by-id" doc:id="3cd91483-fb61-4290-b63a-d0628330ff91" config-ref="Database_Config" >
 			<db:sql ><![CDATA[SELECT * FROM artists WHERE id = :id]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{'id': vars.artist_id}]]]></db:input-parameters>
 		</db:select>
-		<ee:transform doc:name="Transform Message" doc:id="5e2aab96-c207-49e7-bc97-bf4624856aac" >
+		<ee:transform doc:name="payload-to-single-artist-json" doc:id="5e2aab96-c207-49e7-bc97-bf4624856aac" >
 			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	id: payload[0].id,
-	name: payload[0].name
-}]]></ee:set-payload>
+				<ee:set-payload resource="myscripts/singleArtistOrCategoryMappingJSON.dwl"></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</flow>

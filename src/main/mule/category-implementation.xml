@@ -8,11 +8,11 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<flow name="get-categories" doc:id="2d620efc-d111-4e33-a3ce-5957fea57d9e" >
-		<flow-ref doc:name="Flow Reference" doc:id="a864fc3f-2c3d-4ff4-95da-9304c75f9121" name="pagination" />
-		<db:select doc:name="Select all categories" doc:id="05040355-41c7-4539-bad0-51227d58fffe" config-ref="Database_Config" >
+		<flow-ref doc:name="pagination" doc:id="a864fc3f-2c3d-4ff4-95da-9304c75f9121" name="pagination" />
+		<db:select doc:name="db-select-all-categories" doc:id="05040355-41c7-4539-bad0-51227d58fffe" config-ref="Database_Config" >
 			<db:sql ><![CDATA[#["SELECT * FROM product_categories LIMIT $(vars.size) OFFSET $(vars.offset)"]]]></db:sql>
 		</db:select>
-		<ee:transform doc:name="Transform Message" doc:id="29de5b44-8168-4056-b882-27b3897a1db6" >
+		<ee:transform doc:name="payload-map-to-category-json" doc:id="29de5b44-8168-4056-b882-27b3897a1db6" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -23,36 +23,26 @@ payload map {
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<ee:transform doc:name="Transform Message" doc:id="b71cad43-5352-4cbd-8c07-82ebc53fe565" >
+		<ee:transform doc:name="choose-order-direction" doc:id="b71cad43-5352-4cbd-8c07-82ebc53fe565" >
 			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
-var orderDirection = if(lower(vars.order) == 'desc') ((payload orderBy $[vars.sort])[-1 to 0]) else (payload orderBy $[vars.sort])
----
-orderDirection]]></ee:set-payload>
+				<ee:set-payload resource="myscripts/orderBy.dwl"></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</flow>
 	<flow name="get-category-by-id" doc:id="a6add80c-a687-45d8-a1d6-b5c9ef588c23" >
-		<db:select doc:name="Select category by id" doc:id="bfb07220-94d6-4e42-8348-7aa309cfabda" config-ref="Database_Config">
+		<db:select doc:name="db-select-category-by-id" doc:id="bfb07220-94d6-4e42-8348-7aa309cfabda" config-ref="Database_Config">
 			<db:sql ><![CDATA[SELECT * FROM product_categories WHERE id = :id]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{'id': attributes.uriParams.'id'}]]]></db:input-parameters>
 		</db:select>
-		<validation:is-not-empty-collection doc:name="Is not empty collection" doc:id="4bb37dd1-eb88-4984-b9d9-08c338f4dbd9" />
-		<ee:transform doc:name="Transform Message" doc:id="b5a624cc-aa0d-4c1c-85f8-99b87db31f30" >
+		<validation:is-not-empty-collection doc:name="is-not-empty-collection" doc:id="4bb37dd1-eb88-4984-b9d9-08c338f4dbd9" />
+		<ee:transform doc:name="payload-to-single-category-json" doc:id="b5a624cc-aa0d-4c1c-85f8-99b87db31f30" >
 			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	id: payload[0].id,
-	name: payload[0].name
-}]]></ee:set-payload>
+				<ee:set-payload resource="myscripts/singleArtistOrCategoryMappingJSON.dwl"></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<error-handler >
 			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="77507aaa-f3c0-4ce3-a0db-54ab58e4a014" type="VALIDATION:EMPTY_COLLECTION">
-				<ee:transform doc:name="Transform Message" doc:id="6807d393-1cb1-428d-a3c1-30f258f33ad0" >
+				<ee:transform doc:name="category-not-found-message-json" doc:id="6807d393-1cb1-428d-a3c1-30f258f33ad0" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -69,11 +59,11 @@ output application/json
 		</error-handler>
 	</flow>
 	<flow name="delete-category" doc:id="d85a2cef-09da-4446-994c-99b904f546c0" >
-		<db:delete doc:name="Delete category" doc:id="986c129f-fd07-4e35-9e4b-998f7ba17851" config-ref="Database_Config">
+		<db:delete doc:name="db-delete-category-by-id" doc:id="986c129f-fd07-4e35-9e4b-998f7ba17851" config-ref="Database_Config">
 			<db:sql ><![CDATA[DELETE FROM product_categories WHERE id = :id]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{'id': attributes.uriParams.'id'}]]]></db:input-parameters>
 		</db:delete>
-		<ee:transform doc:name="Transform Message" doc:id="c396f956-cf16-4722-89b6-c6daf5676204" >
+		<ee:transform doc:name="category-deleted-message-json" doc:id="c396f956-cf16-4722-89b6-c6daf5676204" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -85,29 +75,23 @@ output application/json
 		</ee:transform>
 	</flow>
 	<flow name="post-category" doc:id="26cfdafb-2d2e-4822-ab7d-b9a2e4822a8a" >
-		<set-variable value="#[payload.name]" doc:name="Category name" doc:id="5ee4e1a3-c155-4ae0-8e0f-819b6be22172" variableName="category_name"/>
-		<db:insert doc:name="Insert category" doc:id="6e07bda2-c2c7-4c55-a8d7-06604dfdd54f" config-ref="Database_Config">
+		<set-variable value="#[payload.name]" doc:name="category-name" doc:id="5ee4e1a3-c155-4ae0-8e0f-819b6be22172" variableName="category_name"/>
+		<db:insert doc:name="db-insert-category" doc:id="6e07bda2-c2c7-4c55-a8d7-06604dfdd54f" config-ref="Database_Config">
 			<db:sql ><![CDATA[INSERT INTO product_categories (name) VALUES (:name)]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{ 'name': vars.category_name }]]]></db:input-parameters>
 		</db:insert>
-		<db:select doc:name="Select newly added category" doc:id="b970810a-402b-4dcf-a9f2-c514be0c069e" config-ref="Database_Config">
+		<db:select doc:name="db-select-newly-added-category-by-name" doc:id="b970810a-402b-4dcf-a9f2-c514be0c069e" config-ref="Database_Config">
 			<db:sql ><![CDATA[SELECT * FROM product_categories WHERE name = :name]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{'name': vars.category_name}]]]></db:input-parameters>
 		</db:select>
-		<ee:transform doc:name="Transform Message" doc:id="ad671116-0430-49f5-a856-2bdcc88b2328" >
+		<ee:transform doc:name="payload-to-single-category-json" doc:id="ad671116-0430-49f5-a856-2bdcc88b2328" >
 			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	id: payload[0].id,
-	name: payload[0].name
-}]]></ee:set-payload>
+				<ee:set-payload resource="myscripts/singleArtistOrCategoryMappingJSON.dwl"></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<error-handler >
 			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="8409f8c1-0b4c-457f-8a21-e40119fa8769" type="DB:QUERY_EXECUTION">
-				<ee:transform doc:name="Transform Message" doc:id="7655f1a0-b7b4-4f3c-b202-2612ebc8f077" >
+				<ee:transform doc:name="post-error-message-json" doc:id="7655f1a0-b7b4-4f3c-b202-2612ebc8f077" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -125,26 +109,20 @@ output application/json
 	</flow>
 	<flow name="put-category" doc:id="c239434f-7145-4d7c-88ac-4ade3686a625" >
 		<set-variable value="#[attributes.uriParams.id]" doc:name="category-id" doc:id="a2462908-b743-42cd-81d4-5a43ec509ffc" variableName="category_id"/>
-		<db:update doc:name="Update category" doc:id="9c5f1d0b-2372-4c7f-b7a9-448166b5c234" config-ref="Database_Config">
+		<db:update doc:name="db-update-category-by-id" doc:id="9c5f1d0b-2372-4c7f-b7a9-448166b5c234" config-ref="Database_Config">
 			<db:sql ><![CDATA[UPDATE product_categories SET name = :name WHERE id = :id]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{
 	'id': vars.category_id,
 	'name': payload.name
 }]]]></db:input-parameters>
 		</db:update>
-		<db:select doc:name="Select newly added category" doc:id="a228ddc1-ea6f-4ad6-bfcf-efbcaf5c0e21" config-ref="Database_Config" >
+		<db:select doc:name="db-select-newly-added-category-by-id" doc:id="a228ddc1-ea6f-4ad6-bfcf-efbcaf5c0e21" config-ref="Database_Config" >
 			<db:sql ><![CDATA[SELECT * FROM product_categories WHERE id = :id]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{'id': vars.category_id}]]]></db:input-parameters>
 		</db:select>
-		<ee:transform doc:name="Transform Message" doc:id="fe91589c-1c7a-4c1e-8966-f61579f603c8" >
+		<ee:transform doc:name="payload-to-single-category-json" doc:id="fe91589c-1c7a-4c1e-8966-f61579f603c8" >
 			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	id: payload[0].id,
-	name: payload[0].name
-}]]></ee:set-payload>
+				<ee:set-payload resource="myscripts/singleArtistOrCategoryMappingJSON.dwl"></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</flow>
