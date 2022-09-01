@@ -173,11 +173,7 @@
 			</munit-tools:mock-when>
 		</munit:behavior>
 		<munit:execution>
-			<munit:set-event doc:name="put-artist" doc:id="b967467e-d941-4dd9-b26e-303adff420f4">
-				<munit:payload value='#[%dw 2.0&#10;	output application/json&#10;---&#10;{&#10;    "name": "Testament"&#10;}&#10;]' mediaType="application/json" />
-				<munit:payload value='#[%dw 2.0&#10;	output application/json&#10;---&#10;{&#10;    "name": "Testament"&#10;}&#10;]' mediaType="application/json" />
-				<munit:payload value='#[%dw 2.0&#10;	output application/json&#10;---&#10;{&#10;    "name": "Testament"&#10;}&#10;]' mediaType="application/json" />
-			</munit:set-event>
+			<munit:set-event doc:name="Set Event" doc:id="f91fff5a-84b1-4ab3-a4c9-03a574b77c92" />
 			<flow-ref doc:name="Flow-ref to put-artist" doc:id="ac31c32f-2c31-48f2-a794-2ca8f7a1f7f7" name="put-artist" />
 		</munit:execution>
 		<munit:validation>

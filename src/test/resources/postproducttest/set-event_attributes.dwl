@@ -1,0 +1,30 @@
+{
+  "headers": {
+    "client_id": "123",
+    "client_secret": "123",
+    "content-type": "application/json",
+    "user-agent": "PostmanRuntime/7.29.2",
+    "accept": "*/*",
+    "postman-token": "191d9b13-6a5d-497f-b4c3-f71a462301f1",
+    "host": "localhost:8081",
+    "accept-encoding": "gzip, deflate, br",
+    "connection": "keep-alive",
+    "content-length": "234"
+  },
+  "clientCertificate": null,
+  "method": "POST",
+  "scheme": "http",
+  "queryParams": {},
+  "requestUri": "/api/products",
+  "queryString": "",
+  "version": "HTTP/1.1",
+  "maskedRequestPath": "/products",
+  "listenerPath": "/api/*",
+  "relativePath": "/api/products",
+  "localAddress": "/127.0.0.1:8081",
+  "uriParams": {},
+  "rawRequestUri": "/api/products",
+  "rawRequestPath": "/api/products",
+  "remoteAddress": "/127.0.0.1:62802",
+  "requestPath": "/api/products"
+}

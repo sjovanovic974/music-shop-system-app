@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="product-main-implementation-suite-automatic.xml" />
+	<munit:test name="post-product-test" doc:id="852473b2-cf01-43e3-b324-2113756017fb" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock db-select-newly-added-product-by-sku" doc:id="556c9239-03dd-4bf5-965c-58c8aa66f1a9" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="58b17204-e83d-4cda-8a0c-fae28b04c64d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/java  --- readUrl('classpath://postproducttest\mock_payload.dwl')]" mediaType="application/java " encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="artist_check_result" value="#[output application/java --- readUrl('classpath://postproducttest\mock_variable_.dwl')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="outboundHeaders" value="#[readUrl('classpath://postproducttest\mock_variable_1.dwl')]" />
+						<munit-tools:variable key="category_name" value="#[output application/json --- readUrl('classpath://postproducttest\mock_variable_2.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="currentSku" value="#[output application/java --- readUrl('classpath://postproducttest\mock_variable_3.dwl')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="artist_name" value="#[output application/json --- readUrl('classpath://postproducttest\mock_variable_4.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="newSku" value="#[output application/java --- readUrl('classpath://postproducttest\mock_variable_5.dwl')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="category_check_result" value="#[output application/java --- readUrl('classpath://postproducttest\mock_variable_6.dwl')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="objectStore" value="#[output application/java --- readUrl('classpath://postproducttest\mock_variable_7.dwl')]" mediaType="application/java" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock db-insert-product" doc:id="7df6884a-6b5d-41d4-817e-7af70509923f" processor="db:insert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="c1f8d8b2-b0c6-4c04-ab24-f3c49a830d39" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/java  --- readUrl('classpath://postproducttest\mock_payload1.dwl')]" mediaType="application/java " encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="artist_check_result" value="#[output application/java --- readUrl('classpath://postproducttest\mock_variable_8.dwl')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="outboundHeaders" value="#[readUrl('classpath://postproducttest\mock_variable_9.dwl')]" />
+						<munit-tools:variable key="category_name" value="#[output application/json --- readUrl('classpath://postproducttest\mock_variable_10.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="currentSku" value="#[output application/java --- readUrl('classpath://postproducttest\mock_variable_11.dwl')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="artist_name" value="#[output application/json --- readUrl('classpath://postproducttest\mock_variable_12.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="newSku" value="#[output application/java --- readUrl('classpath://postproducttest\mock_variable_13.dwl')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="category_check_result" value="#[output application/java --- readUrl('classpath://postproducttest\mock_variable_14.dwl')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="objectStore" value="#[output application/java --- readUrl('classpath://postproducttest\mock_variable_15.dwl')]" mediaType="application/java" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="Spy check-if-artist-is-available" doc:id="c1bb1cb1-e744-4d57-a2b0-0ac6a94dfb87" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="088246c6-a2a6-43dd-b844-b1a336ab0614" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="257bf871-9bfb-4019-8c9d-92f6ac43a66b" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import postproducttest::spy_assert_payload
+---
+spy_assert_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="8573cde6-35ea-4be3-a389-ba7834f0bcc8" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import postproducttest::spy_assert_payload1
+---
+spy_assert_payload1::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+			<munit-tools:spy doc:name="Spy check-if-category-is-available" doc:id="3c3de1cd-90bf-4fb9-a30c-8549f033c263" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="89c80ed9-f3dc-47b0-8b19-a4a4d9b57551" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="7f0f0da9-bec9-47c5-8072-e4c8415c2528" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import postproducttest::spy_assert_payload2
+---
+spy_assert_payload2::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="955d50b7-c1f2-43c2-a76b-0d8ad9356010" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import postproducttest::spy_assert_payload3
+---
+spy_assert_payload3::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+			<munit-tools:spy doc:name="Spy check-sku" doc:id="50384b0b-2418-40c1-9e4e-f1041918ccd4" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="520be5d1-9bfb-415a-9832-576e9a68e929" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="4ae62f2f-83d7-4bb9-9e05-0e2b6d91a223" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import postproducttest::spy_assert_payload4
+---
+spy_assert_payload4::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="679e9db5-d7f5-4c30-b34a-65f093fee629" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import postproducttest::spy_assert_payload5
+---
+spy_assert_payload5::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+			<munit:set-event doc:name="Set Input" doc:id="da60672e-63d8-4d18-8118-e3b3c71830cc" >
+				<munit:payload value="#[output application/json  --- readUrl('classpath://postproducttest\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/json " />
+				<munit:attributes value="#[readUrl('classpath://postproducttest\set-event_attributes.dwl')]" />
+				<munit:variables >
+					<munit:variable key="outboundHeaders" value="#[readUrl('classpath://postproducttest\set-event_variable_.dwl')]" />
+				</munit:variables>
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to post-product" doc:id="c847b125-66fe-46e6-a60f-a2dc30621e26" name="post-product"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="21654a52-4e2d-4512-9b2e-654d49f37f01" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import postproducttest::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+			<munit-tools:verify-call doc:name="Verify retrieve-all" doc:id="d2bf0b2d-c2a8-45d2-a07d-eb96b8152c03" processor="os:retrieve-all" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="58f6ae64-e2da-46d0-9e99-2aa66aba50be" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify check-if-artist-is-available" doc:id="243db56a-b999-4014-80b2-2ddfe35120b8" processor="flow-ref" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="088246c6-a2a6-43dd-b844-b1a336ab0614" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify check-if-category-is-available" doc:id="6694a9c4-3f45-497b-bf29-05cd88661194" processor="flow-ref" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="89c80ed9-f3dc-47b0-8b19-a4a4d9b57551" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify check-sku" doc:id="ffbbcc50-aad9-4a00-b499-bddf35afd73c" processor="flow-ref" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="520be5d1-9bfb-415a-9832-576e9a68e929" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

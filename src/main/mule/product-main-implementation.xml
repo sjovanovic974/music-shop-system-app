@@ -64,29 +64,7 @@ WHERE products.id = :id]]></db:sql>
 		<validation:is-not-empty-collection doc:name="is-not-empty-collection" doc:id="634394d2-b532-45e9-99c4-c9a6f884dc63" message="Product not found" config-ref="Validation_Config"/>
 		<ee:transform doc:name="single-product-json" doc:id="bff50cc8-f031-4def-a0ff-15a55e47c0d8" >
 			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json skipNullOn="everywhere"
----
-{
-	id: payload[0].id,
-	sku: payload[0].sku,
-	name: payload[0].name,
-	description: payload[0].description,
-	active: payload[0].active,
-	image_url: payload[0].image_url,
-	unit_price: payload[0].unit_price,
-	units_in_stock: payload[0].units_in_stock,
-	date_created: payload[0].date_created,
-	last_updated: payload[0].last_updated,
-	artist: {
-		id: payload[0].artist_table_id,
-		name: payload[0].artist_name
-	},
-	category: {
-		id: payload[0].category_table_id,
-		name: payload[0].category_name
-	}
-}]]></ee:set-payload>
+				<ee:set-payload resource="myscripts/singleProductJSON.dwl"></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<error-handler >
@@ -164,31 +142,10 @@ WHERE products.sku = :sku]]></db:sql>
 		</db:select>
 		<ee:transform doc:name="single-product-json" doc:id="65e7d0bf-1574-44d1-83fd-281943d9f650">
 			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
-output application/json skipNullOn="everywhere"
----
-{
-	id: payload[0].id,
-	sku: payload[0].sku,
-	name: payload[0].name,
-	description: payload[0].description,
-	active: payload[0].active,
-	image_url: payload[0].image_url,
-	unit_price: payload[0].unit_price,
-	units_in_stock: payload[0].units_in_stock,
-	date_created: payload[0].date_created,
-	last_updated: payload[0].last_updated,
-	artist: {
-		id: payload[0].artist_table_id,
-		name: payload[0].artist_name
-	},
-	category: {
-		id: payload[0].category_table_id,
-		name: payload[0].category_name
-	}
-}]]></ee:set-payload>
+				<ee:set-payload resource="myscripts/singleProductJSON.dwl"></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+		<os:clear doc:name="clear" doc:id="d5ce3d13-17f7-4546-9a8b-b3bd5af90d6e" objectStore="Object_store"/>
 		<error-handler >
 			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="2aa27a69-8b47-4495-ba88-b13f10379510" type="VALIDATION:EMPTY_COLLECTION">
 				<ee:transform doc:name="validation-message-json" doc:id="f1ed6124-7e8d-41cb-97d5-1c7d1f36ba02">
@@ -260,4 +217,35 @@ output application/java
 			</otherwise>
 		</choice>
 	</sub-flow>
+	<flow name="put-product" doc:id="2c66fa3d-6638-4a1f-bbe2-ae4762f35606" >
+		<set-variable value="#[attributes.uriParams.id]" doc:name="productId" doc:id="dba4e4b0-162a-4c4b-a643-b03567b37575" variableName="product_id"/>
+		<db:update doc:name="db-update-product" doc:id="1189390d-b576-4555-878a-95bf23922378" config-ref="Database_Config">
+			<db:sql ><![CDATA[UPDATE products SET name = :name, description = :description, image_url = :image_url, 
+unit_price = :unit_price, units_in_stock = :units_in_stock, last_updated = :last_updated
+WHERE id = :id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{ 
+	id: vars.product_id,
+	name: payload.name,
+	description: payload.description,
+	image_url: payload.image_url,
+	unit_price: payload.unit_price,
+	units_in_stock: payload.units_in_stock,
+	last_updated: now() as String {format: "yyyy-MM-dd hh:mm:ss.SSS"}
+	
+}]]]></db:input-parameters>
+		</db:update>
+		<db:select doc:name="db-select-product-by-id" doc:id="7919fd38-9b21-4257-8bb4-308431d8351f" config-ref="Database_Config">
+			<db:sql><![CDATA[SELECT products.*, product_categories.id AS category_table_id, product_categories.name AS category_name,
+artists.id AS artist_table_id, artists.name AS artist_name FROM products
+JOIN product_categories ON products.category_id = product_categories.id
+JOIN artists ON products.artist_id = artists.id
+WHERE products.id = :id]]></db:sql>
+			<db:input-parameters><![CDATA[#[{'id': vars.product_id}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="single-product-json" doc:id="fb70a722-7eb2-471a-8ed7-9a76dca87c07" >
+			<ee:message >
+				<ee:set-payload resource="myscripts/singleProductJSON.dwl"></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
 </mule>
