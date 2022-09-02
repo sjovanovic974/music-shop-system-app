@@ -1,0 +1,11 @@
+#HTTP Listener
+http:
+  port: "8081"
+  
+# Database config
+db:
+  host: "sql.freedb.tech"
+  port: "3306"
+  user: "freedb_sj74!"
+  password: "Anr$e8M#!j2q%my"
+  database: "freedb_musicstore"

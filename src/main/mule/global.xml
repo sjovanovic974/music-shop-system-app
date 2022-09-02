@@ -11,17 +11,14 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
 	<configuration-properties doc:name="Configuration properties" doc:id="97e1f814-e967-4184-acc4-dabdc010df45" file="${env}-config.yaml" />
 	<os:object-store name="Object_store" doc:name="Object store" doc:id="cef1bdbb-0469-451a-9132-4d59cac27d81" />
-	<global-property doc:name="Global Property" doc:id="22e00f3a-aeb1-4e40-87fa-6bad6da37d17" name="env" value="local" />
+	<global-property doc:name="Global Property" doc:id="22e00f3a-aeb1-4e40-87fa-6bad6da37d17" name="env" value="dev" />
 	<http:listener-config name="httpListenerConfig">
-        <http:listener-connection host="${http.host}" port="${http.port}" />
+        <http:listener-connection host="0.0.0.0" port="${http.port}" />
     </http:listener-config>
 	<db:config name="Database_Config" doc:name="Database Config" doc:id="223a1a9f-193c-4db4-92bd-8ce591d90a75" >
 		<db:my-sql-connection host="${db.host}" port="${db.port}" user="${db.user}" password="${db.password}" database="${db.database}" />
 	</db:config>
 	<validation:config name="Validation_Config" doc:name="Validation Config" doc:id="d2e01b0f-3cb8-493f-a063-24639f948ca5" />
 	<os:config name="ObjectStore_Config" doc:name="ObjectStore Config" doc:id="99d8d4f2-6267-4111-a9cf-aedcc859b30d" />
-	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="b602f191-2ee5-4388-87f8-dd4f4c78f589" file="${env}.secure.properties" key="${secure.key}" >
-		<secure-properties:encrypt algorithm="Blowfish" />
-	</secure-properties:config>
 
 </mule>
